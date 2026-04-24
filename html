@@ -1,23 +1,17 @@
 <!DOCTYPE html>
 <html>
-<head> 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Outfit:wght@100..900&family=Rubik+Storm&display=swap" rel="stylesheet">
-        <title>Pop Balloon!</title>
-        <style>
-            body {
-                background: grey;
-                color: white;
-                margin: 0;
+<head>
+    <title>Balloon Game</title>
+    <style>
+        body { 
+            background: grey; 
+            margin: 0;
             height: 100vh;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            }
-            #score-text {
+            font-family: Arial, sans-serif;
+        }
+
+        #score-text {
             color: white;
             font-size: 30px;
             padding: 20px;
@@ -25,40 +19,65 @@
             z-index: 100;
         }
 
-            .balloon {
-    position: absolute;
+        .balloon {
+            position: absolute;
             font-size: 60px;
             cursor: pointer;
             user-select: none;
             z-index: 10;
         }
-        #victory-message {
+
+        #victory-screen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: yellow;
-            font-size: 80px;
-            font-weight: bold;
-            display: none;      /* Hidden until you get 10 points */
-            text-shadow: 4px 4px black;
+            text-align: center;
+            display: none;
             z-index: 1000;
         }
-        </style>
+
+        h1 {
+            color: rgb(18, 196, 78);
+            font-size: 80px;
+            text-shadow: 4px 4px black;
+            margin-bottom: 20px;
+        }
+
+        #next-lvl-btn {
+            padding: 15px 30px;
+            font-size: 25px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        #next-lvl-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-  <div id="score-text">Points: <span id="score">0</span></div>
-    <div id="victory-message">VICTORY!</div>
 
-   <script>
-         let points = 0;
-            let gameActive = true;
-         function spawnBalloon() {
+    <div id="score-text">Points: <span id="score">0</span></div>
+
+    <div id="victory-screen">
+        <h1>VICTORY!</h1>
+        <button id="next-lvl-btn" onclick="nextLevel()">NEXT LEVEL</button>
+    </div>
+
+    <script>
+        let points = 0;
+        let gameActive = true;
+
+        function spawnBalloon() {
             if (!gameActive) return;
 
             const balloon = document.createElement("div");
             balloon.className = "balloon";
-            balloon.innerHTML = "🎈"; 
+            balloon.innerHTML = "🎈";
 
             const x = Math.random() * (window.innerWidth - 80);
             const y = Math.random() * (window.innerHeight - 80);
@@ -71,22 +90,31 @@
                 points = points + 1;
                 document.getElementById("score").innerHTML = points;
                 this.remove();
+
                 if (points >= 10) {
-                    endGame();
+                    winGame();
                 }
             };
+
             document.body.appendChild(balloon);
         }
-        function endGame() {
+
+        function winGame() {
             gameActive = false;
-            
             const remaining = document.querySelectorAll('.balloon');
             remaining.forEach(b => b.remove());
-
-            document.getElementById("victory-message").style.display = "block";
-            document.body.style.background = "#222";
+            document.getElementById("victory-screen").style.display = "block";
         }
-        setInterval(spawnBalloon, 1250);
+
+        function nextLevel() {
+            document.getElementById("victory-screen").style.display = "none";
+            document.body.style.background = "grey";
+            points = 0;
+            document.getElementById("score").innerHTML = points;
+            gameActive = true;
+        }
+
+        setInterval(spawnBalloon, 800);
     </script>
 
 </body>
