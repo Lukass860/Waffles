@@ -15,19 +15,22 @@
             color: white;
             font-size: 30px;
             padding: 20px;
-            position: relative;
+            position: absolute; /* Mainīts uz absolute */
+            top: 0;
+            left: 0;
             z-index: 100;
+            /* Šī rinda ir vissvarīgākā: */
+            pointer-events: none; 
         }
 
         .balloon {
             position: absolute;
             font-size: 60px;
             cursor: pointer;
-            user-select: none;
             z-index: 10;
         }
 
-        #victory-screen {
+        #ui-screen {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -37,85 +40,116 @@
             z-index: 1000;
         }
 
-        h1 {
-            color: rgb(18, 196, 78);
-            font-size: 80px;
-            text-shadow: 4px 4px black;
-            margin-bottom: 20px;
-        }
-
-        #next-lvl-btn {
-            padding: 15px 30px;
-            font-size: 25px;
-            background-color: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        #next-lvl-btn:hover {
-            background-color: #45a049;
-        }
+        h1 { font-size: 80px; text-shadow: 4px 4px black; }
+        .victory-title { color: yellow; }
+        .lose-title { color: red; }
     </style>
 </head>
 <body>
 
-    <div id="score-text">Points: <span id="score">0</span></div>
+    <div id="score-text">Points: <span id="score">0</span> | Level: <span id="level-num">1</span></div>
 
-    <div id="victory-screen">
-        <h1>VICTORY!</h1>
-        <button id="next-lvl-btn" onclick="nextLevel()">NEXT LEVEL</button>
+    <div id="ui-screen">
+        <h1 id="status-text"></h1>
+        <button id="action-btn" style="padding:15px; font-size:20px;" onclick="startLevelTwo()">NEXT LEVEL</button>
     </div>
 
     <script>
         let points = 0;
+        let currentLevel = 1;
         let gameActive = true;
+        let pazušanasTaimeris;
+
+        function write(id, content) {
+            document.getElementById(id).innerHTML = content;
+        }
 
         function spawnBalloon() {
-            if (!gameActive) return;
+            if (gameActive == false) return;
 
-            const balloon = document.createElement("div");
+            let balloon = document.createElement("div");
             balloon.className = "balloon";
             balloon.innerHTML = "🎈";
 
-            const x = Math.random() * (window.innerWidth - 80);
-            const y = Math.random() * (window.innerHeight - 80);
+            /* Atstājam nelielu vietu no malām, lai baloni neizietu ārpus ekrāna */
+            let x = Math.random() * (window.innerWidth - 100);
+            let y = Math.random() * (window.innerHeight - 100);
 
             balloon.style.left = x + "px";
             balloon.style.top = y + "px";
 
+            let clicked = false;
+
             balloon.onclick = function() {
-                if (!gameActive) return;
+                if (gameActive == false) return;
+                clicked = true;
+                
+                clearTimeout(pazušanasTaimeris); 
+                
                 points = points + 1;
-                document.getElementById("score").innerHTML = points;
+                write("score", points);
                 this.remove();
 
                 if (points >= 10) {
-                    winGame();
+                    winLevel();
                 }
             };
 
             document.body.appendChild(balloon);
+
+            if (currentLevel == 2) {
+                pazušanasTaimeris = setTimeout(function() {
+                    if (clicked == false && gameActive == true) {
+                        gameOver();
+                    }
+                    if (balloon.parentNode) {
+                        balloon.remove();
+                    }
+                }, 2000);
+            }
         }
 
-        function winGame() {
+        function winLevel() {
             gameActive = false;
-            const remaining = document.querySelectorAll('.balloon');
-            remaining.forEach(b => b.remove());
-            document.getElementById("victory-screen").style.display = "block";
+            clearTimeout(pazušanasTaimeris);
+            write("status-text", "VICTORY!");
+            document.getElementById("status-text").className = "victory-title";
+            write("action-btn", "START LEVEL 2");
+            document.getElementById("action-btn").onclick = startLevelTwo;
+            showScreen();
         }
 
-        function nextLevel() {
-            document.getElementById("victory-screen").style.display = "none";
-            document.body.style.background = "grey";
+        function gameOver() {
+            gameActive = false;
+            clearTimeout(pazušanasTaimeris);
+            write("status-text", "GAME OVER");
+            document.getElementById("status-text").className = "lose-title";
+            write("action-btn", "TRY AGAIN");
+            document.getElementById("action-btn").onclick = resetGame;
+            showScreen();
+        }
+
+        function showScreen() {
+            let balloons = document.querySelectorAll('.balloon');
+            balloons.forEach(b => b.remove());
+            document.getElementById("ui-screen").style.display = "block";
+        }
+
+        function startLevelTwo() {
+            currentLevel = 2;
+            write("level-num", "2");
+            resetGame();
+        }
+
+        function resetGame() {
+            clearTimeout(pazušanasTaimeris);
+            document.getElementById("ui-screen").style.display = "none";
             points = 0;
-            document.getElementById("score").innerHTML = points;
+            write("score", "0");
             gameActive = true;
         }
 
         setInterval(spawnBalloon, 800);
     </script>
-
 </body>
 </html>
